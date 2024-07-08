@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Kevin B. Miller">
-<meta name="dcterms.date" content="2024-07-02">
+<meta name="dcterms.date" content="2024-07-08">
 
 <title>Metal Subgenre Market Basket Analysis in R</title>
 <style>
@@ -147,7 +147,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">July 2, 2024</p>
+      <p class="date">July 8, 2024</p>
     </div>
   </div>
   
@@ -163,7 +163,7 @@ window.Quarto = {
 <h1>TL;DR</h1>
 <p>The analyses in this report analyzed commonly co-occurring Metal subgenres in Metal bands using Market Basket Analysis techniques.</p>
 <p>Bands were scraped from Encyclopaedia Metallum and assigned binary values to each basic subgenre from the website. Only bands that were classified as having multiple subgenres were examined here.</p>
-<p>Death (52.3%), Thrash (30.5%), and Black Metal (27.4%) were the most common subgenres in multi-subgenre bands. More common subgenres tended to have a lower percentage of multi-subgenre bands (e.g., Black Metal: 36.7%; Heavy Metal: 40.0%), whereas less common subgenres tended to have a higher percentage of multi-subgenre bands (e.g., Experimental/Avant-garde Metal: 94.2%; Electronic/Industrial Metal: 89.9%). Among multi-subgenre bands, 90.1% of Grindcore bands were also categorized as Death Metal, 74.2% of Metalcore/Deathcore bands were also categorized as Death Metal, and 62.7% of Folk/Viking/Pagan Metal bands were also categorized as Black Metal. The subgenre pairings that occurred at least 1.5x more frequently than expected included Power and Heavy Metal, Gothic and Doom Metal, Folk/Viking/Pagan and Black Metal, Grindcore and Death Metal, and Speed and Thrash Metal.</p>
+<p>Death (52.7%), Thrash (30.7%), and Black Metal (27.6%) were the most common subgenres in multi-subgenre bands. More common subgenres tended to have a lower percentage of multi-subgenre bands (e.g., Black Metal: 37.0%; Heavy Metal: 39.9%), whereas less common subgenres tended to have a higher percentage of multi-subgenre bands (e.g., Experimental/Avant-garde Metal: 94.2%; Electronic/Industrial Metal: 90.6%). Among multi-subgenre bands, 89.9% of Grindcore bands were also categorized as Death Metal, 74.4% of Metalcore/Deathcore bands were also categorized as Death Metal, and 63.5% of Folk/Viking/Pagan Metal bands were also categorized as Black Metal. The subgenre pairings that occurred at least 1.5x more frequently than expected included Power and Heavy Metal, Gothic and Doom Metal, Folk/Viking/Pagan and Black Metal, Grindcore and Death Metal, and Speed and Thrash Metal.</p>
 <p>These subgenres pairings represent commonly co-occurring Metal subgenres, and each pairing can be explained within the developmental context of Metal music. Further analyses can expand on those conducted here by examining more specific subgenres or including more contextual information regarding the band’s use of a given subgenre.</p>
 </section>
 <section id="background" class="level1">
@@ -224,7 +224,7 @@ window.Quarto = {
 </section>
 <section id="initial-data-wrangling-and-transaction-setup" class="level2">
 <h2 class="anchored" data-anchor-id="initial-data-wrangling-and-transaction-setup">Initial Data Wrangling and Transaction Setup</h2>
-<p>Columns pertaining to subgenres were binary (0/1), denoting absence or presence of subgenre for each band, respectively. While the majority of bands belonged to one subgenre, a considerable amount had two or more. Following the removal of bands with fewer than two subgenres, nearly 70,000 multi-subgenre bands remained. The average number of subgenres for this subgroup was 2.15, indicating a smaller proportion of bands with three to six subgenres. The object <code>trans_bands</code> was used to convert the binary subgenre variables to logical (TRUE/FALSE) and store each band as a transaction with subgenres as items. The summary and plot depict the relative frequencies of each subgenre, with Death (36,057), Thrash (21,019), and Black Metal (18,902) as the most common subgenres.</p>
+<p>Columns pertaining to subgenres were binary (0/1), denoting absence or presence of subgenre for each band, respectively. While the majority of bands belonged to one subgenre, a considerable amount had two or more. Following the removal of bands with fewer than two subgenres, nearly 70,000 multi-subgenre bands remained. The average number of subgenres for this subgroup was 2.15, indicating a smaller proportion of bands with three to six subgenres. The object <code>trans_bands</code> was used to convert the binary subgenre variables to logical (TRUE/FALSE) and store each band as a transaction with subgenres as items. The summary and plot depict the relative frequencies of each subgenre, with Death (36,395), Thrash (21,187), and Black Metal (19,060) as the most common subgenres.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># shorten the longer names for easier plotting and outputs</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>long_subs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">elect =</span> <span class="st">'electronic_industrial'</span>, </span>
@@ -362,7 +362,7 @@ includes extended transaction information - examples:
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="subgenre_pairings_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="672"></p>
-<figcaption>Metal Subgenres (left to right): Death, Thrash, Black, Heavy, Doom, Progressive, Power, Groove, Metalcore/Deathcore, Grindcore, Symphonic, Gothic, Speed, Folk/Viking/Pagan, Experimental/Avant-garde, Electronic/Industrial.</figcaption>
+<figcaption>Metal Subgenres (left to right): Death, Thrash, Black, Heavy, Doom, Progressive, Groove, Power, Metalcore/Deathcore, Grindcore, Symphonic, Gothic, Speed, Folk/Viking/Pagan, Experimental/Avant-garde, Electronic/Industrial.</figcaption>
 </figure>
 </div>
 </div>
@@ -374,7 +374,7 @@ includes extended transaction information - examples:
 <p><span class="math display">\[
 Support = \frac{Count(A)}{Count(All)}
 \]</span></p>
-<p>The threshold for support was set to 0.015, which is the proportion roughly equal to 1,000 bands in the multi-subgenre subset. The table for single subgenres reiterates the frequency plot from the previous section, with Death (52.3%), Thrash (30.5%), and Black Metal (27.4%) comprising a large proportion of the total bands. With a fairly liberal support threshold, 22 multi-subgenre combinations had 1,000 bands or more. Two immediate standouts included Death-Thrash and Blackened Death Metal, with both comprising roughly 14% of observations in the item set (14.0% and 13.8%, respectively).</p>
+<p>The threshold for support was set to 0.015, which is the proportion roughly equal to 1,000 bands in the multi-subgenre subset. The table for single subgenres reiterates the frequency plot from the previous section, with Death (52.7%), Thrash (30.7%), and Black Metal (27.6%) comprising a large proportion of the total bands. With a fairly liberal support threshold, 22 multi-subgenre combinations had 1,000 bands or more. Two immediate standouts included Death-Thrash and Blackened Death Metal, with both comprising roughly 14% of observations in the item set (14.1% and 14.0%, respectively).</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create apriori rules object for occurrences with support &gt; 0.015</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>support_rules <span class="ot">&lt;-</span> trans_bands <span class="sc">%&gt;%</span></span>
@@ -602,7 +602,7 @@ creating S4 object  ... done [0.01s].</code></pre>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="subgenre_pairings_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid figure-img" width="672"></p>
-<figcaption>Metal Subgenres (left to right): Electronic/Industrial, Experimental/Avant-garde, Folk/Viking/Pagan, Metalcore/Deathcore, Groove, Power, Progressive, Doom, Heavy, Thrash, Black, Death.</figcaption>
+<figcaption>Metal Subgenres (left to right): Electronic/Industrial, Experimental/Avant-garde, Speed, Folk/Viking/Pagan, Gothic, Symphonic, Grindcore, Metalcore/Deathcore, Groove, Power, Progressive, Doom, Heavy, Thrash, Black, Death.</figcaption>
 </figure>
 </div>
 </div>
@@ -610,9 +610,9 @@ creating S4 object  ... done [0.01s].</code></pre>
 <p>A few different findings emerge from the scatter plot above:</p>
 <ul>
 <li><p>There appears to be an inverse relationship between number of bands in each subgenre and subgenre mixability</p></li>
-<li><p>Less common subgenres (&lt; 10,000 bands) all had high mixability (&gt; .70)</p></li>
+<li><p>Less common subgenres (&lt; 10,000 bands) had high mixability (all subgenres besides Progressive were above &gt; .70)</p></li>
 <li><p>Black, Heavy, and–to a lesser extent–Doom Metal had low mixability (.37, .40, and .51, respectively)</p></li>
-<li><p>Thrash and Death Metal had relatively high mixability (.61 and .56, respectively), despite being more common subgenres</p></li>
+<li><p>Thrash and Death Metal had relatively high mixability (.60 and .59, respectively), despite being more common subgenres</p></li>
 </ul>
 <p>While being appropriately speculative, it is plausible that more common subgenres have a greater capacity to be “stand-alone” subgenres. Conversely, subgenres like Experimental/Avant-garde and Electronic/Industrial Metal imply influences outside of Metal, which may reflect a lesser capacity for each to be a “stand-alone” Metal subgenre. Thrash and Death Metal had high mixability relative to subgenres of comparable size, such as Heavy or Black Metal. This may suggest Thrash and Death Metal have robust influences, which are simultaneously flexible enough to incorporate other subgenres more regularly than Heavy or Black Metal. Further investigation into the hierarchical structure of Metal subgenres may be useful to characterize mixability, and whether some of these high-mixability subgenres are treated more like add-on influences than subgenres.</p>
 </section>
@@ -682,7 +682,7 @@ creating S4 object  ... done [0.00s].</code></pre>
 [17] {death}     =&gt; {black}  0.1397  0.265      0.5270   0.961 9650 </code></pre>
 </div>
 </div>
-<p>Seventeen multi-subgenre associations exceeded the .25 confidence threshold, with the top four exceeding a threshold of .50. As an example for the top entry, over 90% of Grindcore bands with multiple subgenres had Death Metal as a subgenre. Additionally, Death Metal is a common additional subgenre for Metalcore/Deathcore bands (74.2%), Black Metal is a common additional subgenre for Folk/Viking/Pagan Metal bands (62.7%), and Death Metal is a common additional subgenre for Black Metal bands (50.3%).</p>
+<p>Seventeen multi-subgenre associations exceeded the .25 confidence threshold, with the top four exceeding a threshold of .50. As an example for the top entry, roughly 90% of Grindcore bands with multiple subgenres had Death Metal as a subgenre. Additionally, Death Metal is a common additional subgenre for Metalcore/Deathcore bands (74.4%), Black Metal is a common additional subgenre for Folk/Viking/Pagan Metal bands (63.5%), and Death Metal is a common additional subgenre for Black Metal bands (50.6%).</p>
 </section>
 <section id="lift" class="level2">
 <h2 class="anchored" data-anchor-id="lift">Lift</h2>
@@ -723,7 +723,7 @@ Lift = \frac{p(B|A)}{p(A)*p(B)}
 [17] {groove}    =&gt; {death}  0.0284  0.275      0.1032   0.522 1959 </code></pre>
 </div>
 </div>
-<p>Ignoring bidirectional rules shown in reverse order, nine subgenre pairings occurred more often than expected, with five occurring more than 1.5 times as frequently as expected. These pairings are shown in the table below. Using the top pairing of Power and Heavy Metal as an example, just under five percent (4.9%) of the multi-subgenre pairings included these two, but this was nearly three times as frequently as expected (2.99).</p>
+<p>Ignoring bidirectional rules shown in reverse order, nine subgenre pairings occurred more often than expected, with five occurring more than 1.5 times as frequently as expected. These pairings are shown in the table below. Using the top pairing of Power and Heavy Metal as an example, just under five percent (4.8%) of the multi-subgenre pairings included these two, but this was three times as frequently as expected (3.01).</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="co"># filter to include only lift &gt; 1.5</span></span>
 <span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="co"># filter confidence to remove duplicate heavy =&gt; power</span></span>
