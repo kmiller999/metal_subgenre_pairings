@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.550">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Kevin B. Miller">
+<meta name="dcterms.date" content="2024-07-02">
+
+<title>Metal Subgenre Market Basket Analysis in R</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="subgenre_pairings_files/libs/clipboard/clipboard.min.js"></script>
+<script src="subgenre_pairings_files/libs/quarto-html/quarto.js"></script>
+<script src="subgenre_pairings_files/libs/quarto-html/popper.min.js"></script>
+<script src="subgenre_pairings_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="subgenre_pairings_files/libs/quarto-html/anchor.min.js"></script>
+<link href="subgenre_pairings_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="subgenre_pairings_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="subgenre_pairings_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="subgenre_pairings_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="subgenre_pairings_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Metal Subgenre Market Basket Analysis in R</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Kevin B. Miller </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">July 2, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="tldr" class="level1">
+<h1>TL;DR</h1>
+<p>The analyses in this report analyzed commonly co-occurring Metal subgenres in Metal bands using Market Basket Analysis techniques.</p>
+<p>Bands were scraped from Encyclopaedia Metallum and assigned binary values to each basic subgenre from the website. Only bands that were classified as having multiple subgenres were examined here.</p>
+<p>Death (52.3%), Thrash (30.5%), and Black Metal (27.4%) were the most common subgenres in multi-subgenre bands. More common subgenres tended to have a lower percentage of multi-subgenre bands (e.g., Black Metal: 36.7%; Heavy Metal: 40.0%), whereas less common subgenres tended to have a higher percentage of multi-subgenre bands (e.g., Experimental/Avant-garde Metal: 94.2%; Electronic/Industrial Metal: 89.9%). Among multi-subgenre bands, 90.1% of Grindcore bands were also categorized as Death Metal, 74.2% of Metalcore/Deathcore bands were also categorized as Death Metal, and 62.7% of Folk/Viking/Pagan Metal bands were also categorized as Black Metal. The subgenre pairings that occurred at least 1.5x more frequently than expected included Power and Heavy Metal, Gothic and Doom Metal, Folk/Viking/Pagan and Black Metal, Grindcore and Death Metal, and Speed and Thrash Metal.</p>
+<p>These subgenres pairings represent commonly co-occurring Metal subgenres, and each pairing can be explained within the developmental context of Metal music. Further analyses can expand on those conducted here by examining more specific subgenres or including more contextual information regarding the band’s use of a given subgenre.</p>
+</section>
+<section id="background" class="level1">
+<h1>Background</h1>
+<p>Metal music is composed of subgenres, which represent common subtypes of Metal. Many bands evolve into different subgenres across releases, or will take influence from multiple subgenres at once. Since bands occupying multiple subgenres is not uncommon, I wanted to analyze metal band data to see which subgenres frequently occurred together. The implication for commonly co-occurring subgenres is that these subgenres “blend” well together, or are comprised of similar influences or musical components.</p>
+<p>I tested this using Market Basket Analysis (MBA), which is a technique frequently used in commercial settings to analyze item associations across transactions. For a good primer on the topic and metric interpretation, I recommend reading <em>Market Basket Analysis 101: Key Concepts</em> from <span class="citation" data-cites="curriesivek2020">Currie Sivek (<a href="#ref-curriesivek2020" role="doc-biblioref">2020</a>)</span>. In my use case, subgenres were used in place of items and bands in place of transactions. These analyses used the <code>arules</code> package <span class="citation" data-cites="hahsler2023">(<a href="#ref-hahsler2023" role="doc-biblioref">Hahsler et al., 2023</a>)</span>, and I followed along with the corresponding tutorial to apply these functions to my use case <span class="citation" data-cites="hahsler2024">(<a href="#ref-hahsler2024" role="doc-biblioref">Hahsler, 2024</a>)</span>.</p>
+<p>The data used in these analyses was scraped from <a href="https://www.metal-archives.com/">Encyclopaedia Metallum</a> and processed within the <code>metallum_bands.db</code> SQLite database. Text strings from each band’s original <code>Genre</code> entry were extracted to compared to a list of fifteen basic genres provided by the website (see <code>metallum_web_scraping.qmd</code> for more details). These Metal subgenres are included Black, Death, Doom/Stoner/Sludge, Electronic/Industrial, Experimental/Avant-garde, Folk/Viking/Pagan, Gothic, Grindcore, Groove, Heavy, Metalcore/Deathcore, Power, Progressive, Speed, Symphonic, and Thrash Metal. These analyses were meant to characterize associations between the broader, overarching subgenres, and further analyses can expand findings here by analyzing subgenres with greater specificity.</p>
+<section id="load-packages-and-data" class="level2">
+<h2 class="anchored" data-anchor-id="load-packages-and-data">Load Packages and Data</h2>
+<p>Following the loading of necessary packages and setting of options, the variable <code>con</code> was set to represent the connection to database <code>metallum_bands.db</code>. The data from this table was extracted into the tibble <code>te_metal_bands_df</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load necessary packages</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse) </span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(RSQLite) </span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr) </span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)  </span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(arules)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># set global option to 3 digits to keep outputs from overflowing</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">digits=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># set con equal to SQLite database metallum_bands.db</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>con <span class="ot">&lt;-</span> <span class="fu">dbConnect</span>(RSQLite<span class="sc">::</span><span class="fu">SQLite</span>(), <span class="st">'metallum_bands.db'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-overflow-wrap code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># extract the table dc_processed genres as a tibble and get basic info </span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>te_metal_bands_df <span class="ot">&lt;-</span> <span class="fu">dbGetQuery</span>(con, <span class="st">'SELECT * FROM dc_processed_genres'</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as_tibble</span>()</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(te_metal_bands_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>tibble [182,105 × 22] (S3: tbl_df/tbl/data.frame)
+ $ band_id              : int [1:182105] 0 1 2 3 4 5 6 7 8 9 ...
+ $ band_name            : chr [1:182105] "A // Solution" "A 12 Gauge Tragedy" "A Balance of Power" "A Band Named Jon" ...
+ $ country              : chr [1:182105] "United States" "United States" "United States" "United States" ...
+ $ genre                : chr [1:182105] "Crust Punk/Thrash Metal" "Deathcore" "Melodic Death Metal/Metalcore" "Brutal Death Metal/Grindcore" ...
+ $ status               : chr [1:182105] "Split-up" "Split-up" "Active" "Active" ...
+ $ black                : int [1:182105] 0 0 0 0 0 0 1 0 0 1 ...
+ $ death                : int [1:182105] 0 1 1 1 1 0 0 1 1 0 ...
+ $ doom                 : int [1:182105] 0 0 0 0 0 0 0 0 0 0 ...
+ $ electronic_industrial: int [1:182105] 0 0 0 0 0 0 0 0 0 0 ...
+ $ experimental         : int [1:182105] 0 0 0 0 0 0 0 0 0 0 ...
+ $ folk                 : int [1:182105] 0 0 0 0 0 0 0 0 0 0 ...
+ $ gothic               : int [1:182105] 0 0 0 0 0 0 0 0 0 0 ...
+ $ grindcore            : int [1:182105] 0 0 0 1 0 0 0 0 0 0 ...
+ $ groove               : int [1:182105] 0 0 0 0 0 0 0 0 1 0 ...
+ $ heavy                : int [1:182105] 0 0 0 0 0 0 0 0 0 0 ...
+ $ metalcore_deathcore  : int [1:182105] 0 1 1 0 0 0 0 1 1 0 ...
+ $ power                : int [1:182105] 0 0 0 0 0 1 0 0 0 0 ...
+ $ progressive          : int [1:182105] 0 0 0 0 0 1 0 0 0 0 ...
+ $ speed                : int [1:182105] 0 0 0 0 0 0 0 0 0 0 ...
+ $ symphonic            : int [1:182105] 0 0 0 0 0 0 0 0 0 0 ...
+ $ thrash               : int [1:182105] 1 0 0 0 1 0 0 0 0 0 ...
+ $ total_subgenres      : int [1:182105] 1 2 2 2 2 2 1 2 3 1 ...</code></pre>
+</div>
+</div>
+</section>
+<section id="initial-data-wrangling-and-transaction-setup" class="level2">
+<h2 class="anchored" data-anchor-id="initial-data-wrangling-and-transaction-setup">Initial Data Wrangling and Transaction Setup</h2>
+<p>Columns pertaining to subgenres were binary (0/1), denoting absence or presence of subgenre for each band, respectively. While the majority of bands belonged to one subgenre, a considerable amount had two or more. Following the removal of bands with fewer than two subgenres, nearly 70,000 multi-subgenre bands remained. The average number of subgenres for this subgroup was 2.15, indicating a smaller proportion of bands with three to six subgenres. The object <code>trans_bands</code> was used to convert the binary subgenre variables to logical (TRUE/FALSE) and store each band as a transaction with subgenres as items. The summary and plot depict the relative frequencies of each subgenre, with Death (36,057), Thrash (21,019), and Black Metal (18,902) as the most common subgenres.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># shorten the longer names for easier plotting and outputs</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>long_subs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">elect =</span> <span class="st">'electronic_industrial'</span>, </span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">exp =</span> <span class="st">'experimental'</span>, </span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">core =</span> <span class="st">'metalcore_deathcore'</span>, </span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">prog =</span> <span class="st">'progressive'</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>te_metal_bands_df <span class="ot">&lt;-</span> te_metal_bands_df <span class="sc">%&gt;%</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="fu">all_of</span>(long_subs))</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(te_metal_bands_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>tibble [182,105 × 22] (S3: tbl_df/tbl/data.frame)
+ $ band_id        : int [1:182105] 0 1 2 3 4 5 6 7 8 9 ...
+ $ band_name      : chr [1:182105] "A // Solution" "A 12 Gauge Tragedy" "A Balance of Power" "A Band Named Jon" ...
+ $ country        : chr [1:182105] "United States" "United States" "United States" "United States" ...
+ $ genre          : chr [1:182105] "Crust Punk/Thrash Metal" "Deathcore" "Melodic Death Metal/Metalcore" "Brutal Death Metal/Grindcore" ...
+ $ status         : chr [1:182105] "Split-up" "Split-up" "Active" "Active" ...
+ $ black          : int [1:182105] 0 0 0 0 0 0 1 0 0 1 ...
+ $ death          : int [1:182105] 0 1 1 1 1 0 0 1 1 0 ...
+ $ doom           : int [1:182105] 0 0 0 0 0 0 0 0 0 0 ...
+ $ elect          : int [1:182105] 0 0 0 0 0 0 0 0 0 0 ...
+ $ exp            : int [1:182105] 0 0 0 0 0 0 0 0 0 0 ...
+ $ folk           : int [1:182105] 0 0 0 0 0 0 0 0 0 0 ...
+ $ gothic         : int [1:182105] 0 0 0 0 0 0 0 0 0 0 ...
+ $ grindcore      : int [1:182105] 0 0 0 1 0 0 0 0 0 0 ...
+ $ groove         : int [1:182105] 0 0 0 0 0 0 0 0 1 0 ...
+ $ heavy          : int [1:182105] 0 0 0 0 0 0 0 0 0 0 ...
+ $ core           : int [1:182105] 0 1 1 0 0 0 0 1 1 0 ...
+ $ power          : int [1:182105] 0 0 0 0 0 1 0 0 0 0 ...
+ $ prog           : int [1:182105] 0 0 0 0 0 1 0 0 0 0 ...
+ $ speed          : int [1:182105] 0 0 0 0 0 0 0 0 0 0 ...
+ $ symphonic      : int [1:182105] 0 0 0 0 0 0 0 0 0 0 ...
+ $ thrash         : int [1:182105] 1 0 0 0 1 0 0 0 0 0 ...
+ $ total_subgenres: int [1:182105] 1 2 2 2 2 2 1 2 3 1 ...</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get distribution for total_subgenres</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(te_metal_bands_df, <span class="fu">aes</span>(<span class="at">x=</span>total_subgenres)) <span class="sc">+</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_histogram</span>(<span class="at">binwidth=</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title=</span><span class="st">'Number of Bands with Number of Subgenres'</span>,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">x=</span><span class="st">'Number of Subgenres'</span>, </span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">y=</span><span class="st">'Number of Bands'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="subgenre_pairings_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># remove bands with 0 or 1 subgenre</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>ref_te_metal_bands_df <span class="ot">&lt;-</span> te_metal_bands_df <span class="sc">%&gt;%</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(total_subgenres <span class="sc">&gt;</span> <span class="dv">1</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(ref_te_metal_bands_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>tibble [69,067 × 22] (S3: tbl_df/tbl/data.frame)
+ $ band_id        : int [1:69067] 1 2 3 4 5 7 8 10 15 17 ...
+ $ band_name      : chr [1:69067] "A 12 Gauge Tragedy" "A Balance of Power" "A Band Named Jon" "A Band of Orcs" ...
+ $ country        : chr [1:69067] "United States" "United States" "United States" "United States" ...
+ $ genre          : chr [1:69067] "Deathcore" "Melodic Death Metal/Metalcore" "Brutal Death Metal/Grindcore" "Death/Thrash Metal" ...
+ $ status         : chr [1:69067] "Split-up" "Active" "Active" "Active" ...
+ $ black          : int [1:69067] 0 0 0 0 0 0 0 0 0 0 ...
+ $ death          : int [1:69067] 1 1 1 1 0 1 1 0 1 1 ...
+ $ doom           : int [1:69067] 0 0 0 0 0 0 0 1 0 0 ...
+ $ elect          : int [1:69067] 0 0 0 0 0 0 0 0 0 0 ...
+ $ exp            : int [1:69067] 0 0 0 0 0 0 0 0 0 0 ...
+ $ folk           : int [1:69067] 0 0 0 0 0 0 0 0 0 0 ...
+ $ gothic         : int [1:69067] 0 0 0 0 0 0 0 0 0 0 ...
+ $ grindcore      : int [1:69067] 0 0 1 0 0 0 0 0 0 0 ...
+ $ groove         : int [1:69067] 0 0 0 0 0 0 1 0 0 1 ...
+ $ heavy          : int [1:69067] 0 0 0 0 0 0 0 1 0 0 ...
+ $ core           : int [1:69067] 1 1 0 0 0 1 1 0 1 0 ...
+ $ power          : int [1:69067] 0 0 0 0 1 0 0 0 0 0 ...
+ $ prog           : int [1:69067] 0 0 0 0 1 0 0 0 0 0 ...
+ $ speed          : int [1:69067] 0 0 0 0 0 0 0 0 0 0 ...
+ $ symphonic      : int [1:69067] 0 0 0 0 0 0 0 0 0 0 ...
+ $ thrash         : int [1:69067] 0 0 0 1 0 0 0 0 0 0 ...
+ $ total_subgenres: int [1:69067] 2 2 2 2 2 2 3 2 2 2 ...</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get mean number of subgenres among those with multiple</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>subgenres_per_multi_bands <span class="ot">&lt;-</span> <span class="fu">mean</span>(ref_te_metal_bands_df<span class="sc">$</span>total_subgenres)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>subgenres_per_multi_bands</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 2.15</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># setup transactions object from arules for subgenre columns</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>trans_bands <span class="ot">&lt;-</span> ref_te_metal_bands_df <span class="sc">%&gt;%</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(black<span class="sc">:</span>thrash) <span class="sc">%&gt;%</span> </span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># convert from binary to logical</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate_all</span>(as.logical) <span class="sc">%&gt;%</span> </span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">transactions</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get basic summary</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(trans_bands)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>transactions as itemMatrix in sparse format with
+ 69067 rows (elements/itemsets/transactions) and
+ 16 columns (items) and a density of 0.134 
+
+most frequent items:
+  death  thrash   black   heavy    doom (Other) 
+  36395   21187   19060   10750   10205   50910 
+
+element (itemset/transaction) length distribution:
+sizes
+    2     3     4     5     6 
+59353  9092   586    35     1 
+
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+   2.00    2.00    2.00    2.15    2.00    6.00 
+
+includes extended item information - examples:
+  labels variables levels
+1  black     black   TRUE
+2  death     death   TRUE
+3   doom      doom   TRUE
+
+includes extended transaction information - examples:
+  transactionID
+1             1
+2             2
+3             3</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># show plot of each subgenre's relative frequency</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">itemFrequencyPlot</span>(trans_bands, <span class="at">topN=</span><span class="dv">20</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="subgenre_pairings_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Metal Subgenres (left to right): Death, Thrash, Black, Heavy, Doom, Progressive, Power, Groove, Metalcore/Deathcore, Grindcore, Symphonic, Gothic, Speed, Folk/Viking/Pagan, Experimental/Avant-garde, Electronic/Industrial.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="support" class="level2">
+<h2 class="anchored" data-anchor-id="support">Support</h2>
+<p>Support represents the proportion of the records in a set of items containing an item or combination of items, as depicted in the equation below:</p>
+<p><span class="math display">\[
+Support = \frac{Count(A)}{Count(All)}
+\]</span></p>
+<p>The threshold for support was set to 0.015, which is the proportion roughly equal to 1,000 bands in the multi-subgenre subset. The table for single subgenres reiterates the frequency plot from the previous section, with Death (52.3%), Thrash (30.5%), and Black Metal (27.4%) comprising a large proportion of the total bands. With a fairly liberal support threshold, 22 multi-subgenre combinations had 1,000 bands or more. Two immediate standouts included Death-Thrash and Blackened Death Metal, with both comprising roughly 14% of observations in the item set (14.0% and 13.8%, respectively).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create apriori rules object for occurrences with support &gt; 0.015</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>support_rules <span class="ot">&lt;-</span> trans_bands <span class="sc">%&gt;%</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">apriori</span>(<span class="at">parameter=</span><span class="fu">list</span>(<span class="at">target=</span><span class="st">'frequent'</span>, <span class="at">support=</span><span class="fl">0.015</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Apriori
+
+Parameter specification:
+ confidence minval smax arem  aval originalSupport maxtime support minlen
+         NA    0.1    1 none FALSE            TRUE       5   0.015      1
+ maxlen            target  ext
+     10 frequent itemsets TRUE
+
+Algorithmic control:
+ filter tree heap memopt load sort verbose
+    0.1 TRUE TRUE  FALSE TRUE    2    TRUE
+
+Absolute minimum support count: 1036 
+
+set item appearances ...[0 item(s)] done [0.00s].
+set transactions ...[16 item(s), 69067 transaction(s)] done [0.00s].
+sorting and recoding items ... [16 item(s)] done [0.00s].
+creating transaction tree ... done [0.01s].
+checking subsets of size 1 2 3 done [0.00s].
+sorting transactions ... done [0.01s].
+writing ... [38 set(s)] done [0.00s].
+creating S4 object  ... done [0.00s].</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create subset for single subgenres</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>single_item_support <span class="ot">&lt;-</span> <span class="fu">subset</span>(support_rules, <span class="fu">size</span>(items) <span class="sc">==</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create subset for multiple subgenres</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>multi_item_support <span class="ot">&lt;-</span> <span class="fu">subset</span>(support_rules, <span class="fu">size</span>(items) <span class="sc">&gt;</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># sort and display the single subgenre support metrics</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>single_item_support_sorted <span class="ot">&lt;-</span> <span class="fu">sort</span>(single_item_support, <span class="at">by=</span><span class="st">'support'</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">head</span>(<span class="at">n=</span><span class="dv">20</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">inspect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     items       support count
+[1]  {death}     0.5270  36395
+[2]  {thrash}    0.3068  21187
+[3]  {black}     0.2760  19060
+[4]  {heavy}     0.1556  10750
+[5]  {doom}      0.1478  10205
+[6]  {prog}      0.1123   7759
+[7]  {groove}    0.1032   7127
+[8]  {power}     0.1019   7035
+[9]  {core}      0.0975   6735
+[10] {grindcore} 0.0922   6366
+[11] {symphonic} 0.0550   3797
+[12] {gothic}    0.0432   2983
+[13] {speed}     0.0419   2892
+[14] {folk}      0.0397   2745
+[15] {exp}       0.0287   1979
+[16] {elect}     0.0216   1492</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># sort and display the multiple subgenre support metrics</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>multi_item_support_sorted <span class="ot">&lt;-</span> <span class="fu">sort</span>(multi_item_support, <span class="at">by=</span><span class="st">'support'</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">head</span>(<span class="at">n=</span><span class="dv">25</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">inspect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     items              support count
+[1]  {death, thrash}    0.1414  9766 
+[2]  {black, death}     0.1397  9650 
+[3]  {death, grindcore} 0.0829  5724 
+[4]  {death, core}      0.0725  5009 
+[5]  {death, doom}      0.0597  4125 
+[6]  {heavy, thrash}    0.0502  3466 
+[7]  {heavy, power}     0.0477  3294 
+[8]  {groove, thrash}   0.0443  3060 
+[9]  {black, thrash}    0.0433  2991 
+[10] {death, prog}      0.0402  2774 
+[11] {black, doom}      0.0368  2540 
+[12] {death, groove}    0.0284  1959 
+[13] {black, folk}      0.0252  1743 
+[14] {black, symphonic} 0.0218  1507 
+[15] {power, prog}      0.0197  1360 
+[16] {speed, thrash}    0.0196  1357 
+[17] {heavy, prog}      0.0188  1297 
+[18] {power, thrash}    0.0177  1221 
+[19] {prog, thrash}     0.0167  1154 
+[20] {doom, gothic}     0.0165  1139 
+[21] {doom, heavy}      0.0161  1114 
+[22] {groove, core}     0.0158  1094 </code></pre>
+</div>
+</div>
+</section>
+<section id="mixability" class="level2">
+<h2 class="anchored" data-anchor-id="mixability">Mixability</h2>
+<p>Next, I wanted to compare the proportion of bands featuring multiple subgenres across subgenres. To do this, I created a transactions object from the original data, which included all bands, regardless of how many subgenres each had. Then I extracted the support metrics from all bands and the bands with multiple subgenres, and joined these two dataframes into a single dataframe (<code>comparison_support_df</code>). I computed a new variable, mixability, as the proportion of each subgenre’s observations in which the subgenre was one of two or more:</p>
+<p><span class="math display">\[
+Mixability_{Subgenre} = P(2+ Subgenres) = \frac{Count(Subgenre|2+ Subgenres)}{Count(Subgenre)}
+\]</span></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create transactions object for all bands regardless of subgenre number</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>all_trans_bands <span class="ot">&lt;-</span> te_metal_bands_df <span class="sc">%&gt;%</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(black<span class="sc">:</span>thrash) <span class="sc">%&gt;%</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate_all</span>(as.logical) <span class="sc">%&gt;%</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">transactions</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create ruleset from transations for support</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>all_subs_support <span class="ot">&lt;-</span> all_trans_bands <span class="sc">%&gt;%</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">apriori</span>(<span class="at">parameter=</span>(<span class="fu">list</span>(<span class="at">target=</span><span class="st">'frequent'</span>, <span class="at">support=</span><span class="fl">0.001</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Apriori
+
+Parameter specification:
+ confidence minval smax arem  aval originalSupport maxtime support minlen
+         NA    0.1    1 none FALSE            TRUE       5   0.001      1
+ maxlen            target  ext
+     10 frequent itemsets TRUE
+
+Algorithmic control:
+ filter tree heap memopt load sort verbose
+    0.1 TRUE TRUE  FALSE TRUE    2    TRUE
+
+Absolute minimum support count: 182 
+
+set item appearances ...[0 item(s)] done [0.00s].
+set transactions ...[16 item(s), 182105 transaction(s)] done [0.01s].
+sorting and recoding items ... [16 item(s)] done [0.00s].
+creating transaction tree ... done [0.02s].
+checking subsets of size 1 2 3 done [0.00s].
+sorting transactions ... done [0.02s].
+writing ... [89 set(s)] done [0.00s].
+creating S4 object  ... done [0.01s].</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># extract all single subgenre support metrics </span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>single_all_subs_support <span class="ot">&lt;-</span> <span class="fu">subset</span>(all_subs_support, <span class="fu">size</span>(items) <span class="sc">==</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># sort the single subgenre support metrics</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>single_all_subs_support_sorted <span class="ot">&lt;-</span> <span class="fu">sort</span>(single_all_subs_support, </span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>                                       <span class="at">by=</span><span class="st">'support'</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">head</span>(<span class="at">n=</span><span class="dv">20</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">inspect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     items       support count
+[1]  {death}     0.33693 61357
+[2]  {black}     0.28298 51532
+[3]  {thrash}    0.19252 35059
+[4]  {heavy}     0.14786 26926
+[5]  {doom}      0.11062 20144
+[6]  {prog}      0.06577 11977
+[7]  {power}     0.05293  9639
+[8]  {groove}    0.04758  8664
+[9]  {core}      0.04582  8344
+[10] {grindcore} 0.04349  7919
+[11] {symphonic} 0.02603  4741
+[12] {gothic}    0.02271  4135
+[13] {folk}      0.02026  3690
+[14] {speed}     0.01795  3268
+[15] {exp}       0.01154  2101
+[16] {elect}     0.00904  1646</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># convert single multi-subgenre support to dataframe</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>single_support_df <span class="ot">&lt;-</span> <span class="fu">as</span>(single_item_support_sorted, <span class="st">'data.frame'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># convert all subgenre support to dataframe</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>all_single_support_df <span class="ot">&lt;-</span> <span class="fu">as</span>(single_all_subs_support_sorted, <span class="st">'data.frame'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># add multi_ prefix to distinguish columns</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>single_support_df <span class="ot">&lt;-</span> single_support_df <span class="sc">%&gt;%</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename_with</span>(<span class="at">.cols=</span>support<span class="sc">:</span>count, <span class="sc">~</span> <span class="fu">paste0</span>(<span class="st">'multi_'</span>, .x))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># join tables on items (subgenre)</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>comparison_support_df <span class="ot">&lt;-</span> single_support_df <span class="sc">%&gt;%</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(all_single_support_df, <span class="fu">join_by</span>(items))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create mixability variable and sort accordingly</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>comparison_support_df <span class="ot">&lt;-</span> comparison_support_df <span class="sc">%&gt;%</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">mixability =</span> multi_count<span class="sc">/</span>count) <span class="sc">%&gt;%</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(<span class="fu">desc</span>(mixability))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="mixability-results" class="level2">
+<h2 class="anchored" data-anchor-id="mixability-results">Mixability Results</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># output comparison support metrics </span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>comparison_support_df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>         items multi_support multi_count support count mixability
+1        {exp}        0.0287        1979 0.01154  2101      0.942
+2      {elect}        0.0216        1492 0.00904  1646      0.906
+3      {speed}        0.0419        2892 0.01795  3268      0.885
+4     {groove}        0.1032        7127 0.04758  8664      0.823
+5       {core}        0.0975        6735 0.04582  8344      0.807
+6  {grindcore}        0.0922        6366 0.04349  7919      0.804
+7  {symphonic}        0.0550        3797 0.02603  4741      0.801
+8       {folk}        0.0397        2745 0.02026  3690      0.744
+9      {power}        0.1019        7035 0.05293  9639      0.730
+10    {gothic}        0.0432        2983 0.02271  4135      0.721
+11      {prog}        0.1123        7759 0.06577 11977      0.648
+12    {thrash}        0.3068       21187 0.19252 35059      0.604
+13     {death}        0.5270       36395 0.33693 61357      0.593
+14      {doom}        0.1478       10205 0.11062 20144      0.507
+15     {heavy}        0.1556       10750 0.14786 26926      0.399
+16     {black}        0.2760       19060 0.28298 51532      0.370</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create scatter plot comparing number of bands to mixability</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(comparison_support_df, <span class="fu">aes</span>(<span class="at">x=</span>count, <span class="at">y=</span>mixability, <span class="at">label=</span>items)) <span class="sc">+</span> </span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_text</span>(<span class="at">check_overlap=</span><span class="cn">TRUE</span>) <span class="sc">+</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title=</span><span class="st">'Mixability in Relation to Total Subgenre Band Count'</span>,</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">x=</span><span class="st">'Number of Bands in Subgenre'</span>, </span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">y=</span><span class="st">'Mixability (Proportion in Multi-Subgenre)'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="subgenre_pairings_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Metal Subgenres (left to right): Electronic/Industrial, Experimental/Avant-garde, Folk/Viking/Pagan, Metalcore/Deathcore, Groove, Power, Progressive, Doom, Heavy, Thrash, Black, Death.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>A few different findings emerge from the scatter plot above:</p>
+<ul>
+<li><p>There appears to be an inverse relationship between number of bands in each subgenre and subgenre mixability</p></li>
+<li><p>Less common subgenres (&lt; 10,000 bands) all had high mixability (&gt; .70)</p></li>
+<li><p>Black, Heavy, and–to a lesser extent–Doom Metal had low mixability (.37, .40, and .51, respectively)</p></li>
+<li><p>Thrash and Death Metal had relatively high mixability (.61 and .56, respectively), despite being more common subgenres</p></li>
+</ul>
+<p>While being appropriately speculative, it is plausible that more common subgenres have a greater capacity to be “stand-alone” subgenres. Conversely, subgenres like Experimental/Avant-garde and Electronic/Industrial Metal imply influences outside of Metal, which may reflect a lesser capacity for each to be a “stand-alone” Metal subgenre. Thrash and Death Metal had high mixability relative to subgenres of comparable size, such as Heavy or Black Metal. This may suggest Thrash and Death Metal have robust influences, which are simultaneously flexible enough to incorporate other subgenres more regularly than Heavy or Black Metal. Further investigation into the hierarchical structure of Metal subgenres may be useful to characterize mixability, and whether some of these high-mixability subgenres are treated more like add-on influences than subgenres.</p>
+</section>
+<section id="confidence" class="level2">
+<h2 class="anchored" data-anchor-id="confidence">Confidence</h2>
+<p>Confidence represents the proportion of observations in which a consequent item (B) will also be in the interaction, given an antecedent item (A) in the association. It answers the question, “What are the chances I will get item B, if I already have A?”:</p>
+<p><span class="math display">\[
+Confidence = \frac{P(B|A)}{P(A)}
+\]</span></p>
+<p>Keeping the same threshold for support (0.015), I added a confidence threshold of 0.25 to the <code>apriori</code> object <code>rules</code>. The combination of these constraints yielded item associations that occurred at least 1.5% of the time, in which the consequent (second) item was present at least 25% of the time, given the antecedent (first) item in the sequence. Only multi-item associations were examined, as single-item confidence metrics do not add anything on top of support.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-overflow-wrap code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># extract rules with support &gt; 0.015 and confidence &gt; 0.25</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>rules <span class="ot">&lt;-</span> <span class="fu">apriori</span>(trans_bands, <span class="at">parameter=</span><span class="fu">list</span>(<span class="at">support=</span><span class="fl">0.015</span>, </span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>                                             <span class="at">confidence=</span><span class="fl">0.25</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Apriori
+
+Parameter specification:
+ confidence minval smax arem  aval originalSupport maxtime support minlen
+       0.25    0.1    1 none FALSE            TRUE       5   0.015      1
+ maxlen target  ext
+     10  rules TRUE
+
+Algorithmic control:
+ filter tree heap memopt load sort verbose
+    0.1 TRUE TRUE  FALSE TRUE    2    TRUE
+
+Absolute minimum support count: 1036 
+
+set item appearances ...[0 item(s)] done [0.00s].
+set transactions ...[16 item(s), 69067 transaction(s)] done [0.00s].
+sorting and recoding items ... [16 item(s)] done [0.00s].
+creating transaction tree ... done [0.01s].
+checking subsets of size 1 2 3 done [0.00s].
+writing ... [20 rule(s)] done [0.00s].
+creating S4 object  ... done [0.00s].</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co"># extract multi-item associations only</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>multi_item_confidence <span class="ot">&lt;-</span> <span class="fu">subset</span>(rules, <span class="fu">size</span>(<span class="fu">lhs</span>(rules)) <span class="sc">&gt;</span> <span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co"># sort the multi-item assocations by confidence </span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>multi_item_confidence_sorted <span class="ot">&lt;-</span> <span class="fu">sort</span>(multi_item_confidence, </span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">by=</span><span class="st">'confidence'</span>)</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>multi_item_confidence_sorted <span class="sc">%&gt;%</span></span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">inspect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     lhs            rhs      support confidence coverage lift  count
+[1]  {grindcore} =&gt; {death}  0.0829  0.899      0.0922   1.706 5724 
+[2]  {core}      =&gt; {death}  0.0725  0.744      0.0975   1.411 5009 
+[3]  {folk}      =&gt; {black}  0.0252  0.635      0.0397   2.301 1743 
+[4]  {black}     =&gt; {death}  0.1397  0.506      0.2760   0.961 9650 
+[5]  {speed}     =&gt; {thrash} 0.0196  0.469      0.0419   1.530 1357 
+[6]  {power}     =&gt; {heavy}  0.0477  0.468      0.1019   3.008 3294 
+[7]  {thrash}    =&gt; {death}  0.1414  0.461      0.3068   0.875 9766 
+[8]  {groove}    =&gt; {thrash} 0.0443  0.429      0.1032   1.400 3060 
+[9]  {doom}      =&gt; {death}  0.0597  0.404      0.1478   0.767 4125 
+[10] {symphonic} =&gt; {black}  0.0218  0.397      0.0550   1.438 1507 
+[11] {gothic}    =&gt; {doom}   0.0165  0.382      0.0432   2.584 1139 
+[12] {prog}      =&gt; {death}  0.0402  0.358      0.1123   0.678 2774 
+[13] {heavy}     =&gt; {thrash} 0.0502  0.322      0.1556   1.051 3466 
+[14] {heavy}     =&gt; {power}  0.0477  0.306      0.1556   3.008 3294 
+[15] {groove}    =&gt; {death}  0.0284  0.275      0.1032   0.522 1959 
+[16] {death}     =&gt; {thrash} 0.1414  0.268      0.5270   0.875 9766 
+[17] {death}     =&gt; {black}  0.1397  0.265      0.5270   0.961 9650 </code></pre>
+</div>
+</div>
+<p>Seventeen multi-subgenre associations exceeded the .25 confidence threshold, with the top four exceeding a threshold of .50. As an example for the top entry, over 90% of Grindcore bands with multiple subgenres had Death Metal as a subgenre. Additionally, Death Metal is a common additional subgenre for Metalcore/Deathcore bands (74.2%), Black Metal is a common additional subgenre for Folk/Viking/Pagan Metal bands (62.7%), and Death Metal is a common additional subgenre for Black Metal bands (50.3%).</p>
+</section>
+<section id="lift" class="level2">
+<h2 class="anchored" data-anchor-id="lift">Lift</h2>
+<p>Lift goes a step beyond confidence, yielding the probably of consequent (B) given antecedent (A), accounting for the likelihood of these items occurring together if there was no association between them:</p>
+<p><span class="math display">\[
+Lift = \frac{p(B|A)}{p(A)*p(B)}
+\]</span></p>
+<p>Since no relationship is assumed between a pair of items, lift values can be interpreted with the following framework:</p>
+<ul>
+<li><p>Lift = 0-1: occur less often than expected</p></li>
+<li><p>Lift = 1: occurs as often as expected</p></li>
+<li><p>Lift &gt; 1: occurs more often than expected</p></li>
+</ul>
+<p>Using the same support (0.015) and confidence constraints (0.25) as before, the lift metrics are shown below in descending order.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co"># support previous rules by lift </span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>lift_rules <span class="ot">&lt;-</span> <span class="fu">sort</span>(multi_item_confidence, <span class="at">by=</span><span class="st">'lift'</span>)</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>lift_rules <span class="sc">%&gt;%</span></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">inspect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     lhs            rhs      support confidence coverage lift  count
+[1]  {power}     =&gt; {heavy}  0.0477  0.468      0.1019   3.008 3294 
+[2]  {heavy}     =&gt; {power}  0.0477  0.306      0.1556   3.008 3294 
+[3]  {gothic}    =&gt; {doom}   0.0165  0.382      0.0432   2.584 1139 
+[4]  {folk}      =&gt; {black}  0.0252  0.635      0.0397   2.301 1743 
+[5]  {grindcore} =&gt; {death}  0.0829  0.899      0.0922   1.706 5724 
+[6]  {speed}     =&gt; {thrash} 0.0196  0.469      0.0419   1.530 1357 
+[7]  {symphonic} =&gt; {black}  0.0218  0.397      0.0550   1.438 1507 
+[8]  {core}      =&gt; {death}  0.0725  0.744      0.0975   1.411 5009 
+[9]  {groove}    =&gt; {thrash} 0.0443  0.429      0.1032   1.400 3060 
+[10] {heavy}     =&gt; {thrash} 0.0502  0.322      0.1556   1.051 3466 
+[11] {black}     =&gt; {death}  0.1397  0.506      0.2760   0.961 9650 
+[12] {death}     =&gt; {black}  0.1397  0.265      0.5270   0.961 9650 
+[13] {death}     =&gt; {thrash} 0.1414  0.268      0.5270   0.875 9766 
+[14] {thrash}    =&gt; {death}  0.1414  0.461      0.3068   0.875 9766 
+[15] {doom}      =&gt; {death}  0.0597  0.404      0.1478   0.767 4125 
+[16] {prog}      =&gt; {death}  0.0402  0.358      0.1123   0.678 2774 
+[17] {groove}    =&gt; {death}  0.0284  0.275      0.1032   0.522 1959 </code></pre>
+</div>
+</div>
+<p>Ignoring bidirectional rules shown in reverse order, nine subgenre pairings occurred more often than expected, with five occurring more than 1.5 times as frequently as expected. These pairings are shown in the table below. Using the top pairing of Power and Heavy Metal as an example, just under five percent (4.9%) of the multi-subgenre pairings included these two, but this was nearly three times as frequently as expected (2.99).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="co"># filter to include only lift &gt; 1.5</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="co"># filter confidence to remove duplicate heavy =&gt; power</span></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>lifted_sub_pairs <span class="ot">&lt;-</span> <span class="fu">subset</span>(lift_rules, lift <span class="sc">&gt;</span> <span class="fl">1.5</span> <span class="sc">&amp;</span> confidence <span class="sc">&gt;</span> .<span class="dv">35</span>)</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>lifted_sub_pairs <span class="sc">%&gt;%</span></span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">inspect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>    lhs            rhs      support confidence coverage lift count
+[1] {power}     =&gt; {heavy}  0.0477  0.468      0.1019   3.01 3294 
+[2] {gothic}    =&gt; {doom}   0.0165  0.382      0.0432   2.58 1139 
+[3] {folk}      =&gt; {black}  0.0252  0.635      0.0397   2.30 1743 
+[4] {grindcore} =&gt; {death}  0.0829  0.899      0.0922   1.71 5724 
+[5] {speed}     =&gt; {thrash} 0.0196  0.469      0.0419   1.53 1357 </code></pre>
+</div>
+</div>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>Returning to the initial question regarding which metal subgenres frequently co-occur together, the lift table above yields a good picture of subgenres than co-occur more often than would be expected. These subgenre pairings are listed below:</p>
+<ul>
+<li><p>Power and Heavy Metal</p></li>
+<li><p>Gothic and Doom Metal</p></li>
+<li><p>Folk/Viking/Pagan and Black Metal</p></li>
+<li><p>Grindcore and Death Metal</p></li>
+<li><p>Speed and Thrash Metal</p></li>
+</ul>
+<p>To knowledgeable Metalheads like myself, these pairings are unsurprising and sensible from a subgenre hierarchy standpoint. For an excellent visual representation of metal subgenres that contains contextual information on influences and timelines of each, I recommend visiting <a href="https://mapofmetal.com/">mapofmetal.com</a> <span class="citation" data-cites="mapofm">(<a href="#ref-mapofm" role="doc-biblioref">Galbraith &amp; Grant, n.d.</a>)</span>. Two of these subgenre pairings represent an “offshoot” of the older subgenre (Power from Heavy Metal and Thrash from Speed Metal), which suggests a clear overlap between each of the pairings. Grindcore and Death Metal evolved on a similar timeline with similar influences, and the existence of intermediate subgenres like Deathgrind suggest a clear link between the two.</p>
+<p>The links between Gothic and Doom and Folk/Viking/Pagan and Black Metal are present as well, and each represents interesting path that potentially diverged from the larger developments in a subgenre. For Gothic and Doom Metal (i.e., Gothic Doom Metal), it may have served as a means for Gothic Metal bands of the late 1990’s to diverge from the contemporary usage of symphonic elements in the subgenre <span class="citation" data-cites="gothicd">(<a href="#ref-gothicd" role="doc-biblioref"><em>Gothic Doom</em>, n.d.</a>)</span>. Instead, Gothic Doom Metal leaned into the more bleak and depressing lyrical and musical influences inherent to both Gothic and Doom Metal. The link between Folk/Viking/Pagan and Black Metal likely stems from the subgenres Viking and Pagan Metal, which were both derived from Black Metal <span class="citation" data-cites="hofmann2020c">(<a href="#ref-hofmann2020c" role="doc-biblioref">Hofmann, 2020</a>)</span>. These subgenres supplanted the Satanic lyrical themes typical of Black Metal by incorporating Norse mythology and Paganism into lyrics, as well as focuses on nature and broader folklore <span class="citation" data-cites="hofmann2020c vonhelden2010">(<a href="#ref-hofmann2020c" role="doc-biblioref">Hofmann, 2020</a>; <a href="#ref-vonhelden2010" role="doc-biblioref">Von Helden &amp; Scott, 2010</a>)</span>.</p>
+</section>
+<section id="next-steps" class="level2">
+<h2 class="anchored" data-anchor-id="next-steps">Next Steps</h2>
+<p>Since these analyses were intended to provide a general overview of commonly co-occurring Metal subgenres, a couple improvements immediately come to mind for future analyses. Firstly, it would be advantageous to go beyond the basic subgenres provided by Encyclopaedia Metallum to analyze more specific subgenres. This is especially the case for base subgenres like Death or Doom Metal, which have a considerable degree of heterogeneity between subgenres under the base subgenre. Secondly, it would be useful to discern whether a band listed under multiple subgenres evolved from one to another, or simultaneously embodied multiple subgenres. Although these instances were treated as equivalent here, it could be argued that a band taking simultaneous influence from multiple subgenres is a better example of a multi-subgenre band. While Encyclopaedia Metallum provides labels like “(early)” or “(late)” to distinguish impermanent subgenres for a band, a proper demarcation might require additional information from album reviews or analysis or musical elements.</p>
+<p>The following code block saves the dataframe <code>te_metal_bands_df</code> to a .csv file for later usage.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(te_metal_bands_df, <span class="st">'data/sub_metal_bands.csv'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+</section>
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" data-line-spacing="2" role="list">
+<div id="ref-curriesivek2020" class="csl-entry" role="listitem">
+Currie Sivek, S. (2020). <em>Market Basket Analysis 101: Key Concepts</em>. <a href="https://towardsdatascience.com/market-basket-analysis-101-key-concepts-1ddc6876cd00">https://towardsdatascience.com/market-basket-analysis-101-key-concepts-1ddc6876cd00</a>
+</div>
+<div id="ref-mapofm" class="csl-entry" role="listitem">
+Galbraith, P., &amp; Grant, N. (n.d.). <em>Map of Metal</em>. <a href="http://mapofmetal.com/">http://mapofmetal.com/</a>
+</div>
+<div id="ref-gothicd" class="csl-entry" role="listitem">
+<em>Gothic doom</em>. (n.d.). <a href="https://metal.fandom.com/wiki/Gothic_doom">https://metal.fandom.com/wiki/Gothic_doom</a>
+</div>
+<div id="ref-hahsler2024" class="csl-entry" role="listitem">
+Hahsler, M. (2024). <em>Association Analysis: Basic Concepts and Algorithms</em>. <a href="https://mhahsler.github.io/Introduction_to_Data_Mining_R_Examples/book/association-analysis-basic-concepts-and-algorithms.html">https://mhahsler.github.io/Introduction_to_Data_Mining_R_Examples/book/association-analysis-basic-concepts-and-algorithms.html</a>
+</div>
+<div id="ref-hahsler2023" class="csl-entry" role="listitem">
+Hahsler, M., Buchta, C., Gruen, B., &amp; Hornik, K. (2023). <em>Arules: Mining association rules and frequent itemsets</em>. <a href="https://cran.r-project.org/web/packages/arules/index.html">https://cran.r-project.org/web/packages/arules/index.html</a>
+</div>
+<div id="ref-hofmann2020c" class="csl-entry" role="listitem">
+Hofmann, A. (2020). Viking, pagan or folk? Distinguishing possibilities for metal sub-genres. <em>Ba<span>š</span><span>ć</span>inski Glasi : Ju<span>ž</span>nohrvatski Etnomuzikolo<span>š</span>ki Godi<span>š</span>njak</em>, <em>15</em>(1), 73–91. <a href="https://hrcak.srce.hr/file/365400">https://hrcak.srce.hr/file/365400</a>
+</div>
+<div id="ref-vonhelden2010" class="csl-entry" role="listitem">
+Von Helden, I., &amp; Scott, N. (2010). Barbarians and literature: Viking metal and its links to old norse mythology. <em>The Metal Void: First Gatherings</em>, 257–264.
+</div>
+</div></section></div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

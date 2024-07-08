@@ -1,0 +1,219 @@
+---
+title: "Cleaning Metal Archives Data Using SQL"
+author: "Kevin B. Miller"
+date: June 21, 2024
+output: html_document
+---
+
+## Database Connection
+
+Metal bands often incorporate influences from multiple subgenres, or shift subgenres throughout their career. Accordingly, many bands in the Metal Archives have a `genre` field with multiple subgenres. Rather than forcing each band into a primary subgenre, I wanted each band to be characterized as having a presence or absence of each subgenre. The code in this document accomplished these steps using SQL code by connecting to the `metal_archives_table` from the `metallum_bands.db` via an RSQLite instance.
+
+```{r}
+#| warning: false
+# import library from R
+library("DBI")
+library(RSQLite)
+library(knitr)
+# set options to print more rows (up to 100)
+opts_chunk$set(echo=TRUE, sql.max.print=100)
+```
+
+```{r}
+# save connection to metallum_bands.db as con
+con <- dbConnect(RSQLite::SQLite(), "metallum_bands.db")
+```
+
+```{sql, connection=con}
+SELECT * 
+FROM metal_archives_table;
+```
+
+## Steps for Subgenre Structure
+
+### 1. Create TEMP Table for Processing Subgenres
+
+To start, I created a TEMP table, `processed_genres`, to process the `genre` field in the data.
+
+```{sql, connection=con}
+CREATE TEMP TABLE processed_genres AS
+SELECT 
+    band_id, 
+    band_name,
+    country,
+    genre, 
+    status
+FROM metal_archives_table;
+```
+
+### 2. Create a New Column for Each Basic Metal Archives Subgenre
+
+Once `processed_genres` was created, I added an integer column for each base subgenre from the Metal Archives.
+
+```{sql, connection=con}
+ALTER TABLE processed_genres ADD COLUMN black INTEGER DEFAULT 0;
+```
+
+```{sql, connection=con}
+ALTER TABLE processed_genres ADD COLUMN death INTEGER DEFAULT 0;
+```
+
+```{sql, connection=con}
+ALTER TABLE processed_genres ADD COLUMN doom INTEGER DEFAULT 0;
+```
+
+```{sql, connection=con}
+ALTER TABLE processed_genres ADD COLUMN electronic_industrial INTEGER DEFAULT 0;
+```
+
+```{sql, connection=con}
+ALTER TABLE processed_genres ADD COLUMN experimental INTEGER DEFAULT 0;
+```
+
+```{sql, connection=con}
+ALTER TABLE processed_genres ADD COLUMN folk INTEGER DEFAULT 0;
+```
+
+```{sql, connection=con}
+ALTER TABLE processed_genres ADD COLUMN gothic INTEGER DEFAULT 0;
+```
+
+```{sql, connection=con}
+ALTER TABLE processed_genres ADD COLUMN grindcore INTEGER DEFAULT 0;
+```
+
+```{sql, connection=con}
+ALTER TABLE processed_genres ADD COLUMN groove INTEGER DEFAULT 0;
+```
+
+```{sql, connection=con}
+ALTER TABLE processed_genres ADD COLUMN heavy INTEGER DEFAULT 0;
+```
+
+```{sql, connection=con}
+ALTER TABLE processed_genres ADD COLUMN metalcore_deathcore INTEGER DEFAULT 0;
+```
+
+```{sql, connection=con}
+ALTER TABLE processed_genres ADD COLUMN power INTEGER DEFAULT 0;
+```
+
+```{sql, connection=con}
+ALTER TABLE processed_genres ADD COLUMN progressive INTEGER DEFAULT 0;
+```
+
+```{sql, connection=con}
+ALTER TABLE processed_genres ADD COLUMN speed INTEGER DEFAULT 0;
+```
+
+```{sql, connection=con}
+ALTER TABLE processed_genres ADD COLUMN symphonic INTEGER DEFAULT 0;
+```
+
+```{sql, connection=con}
+ALTER TABLE processed_genres ADD COLUMN thrash INTEGER DEFAULT 0;
+```
+
+```{sql, connection=con}
+SELECT * 
+FROM processed_genres
+LIMIT 10;
+```
+
+### 3. Identify Bands with Appropriate Subgenres
+
+The code block below parsed the `genre` field in `processed_genres` and added a 1 to the value of a given subgenre when the band's `genre` field included that subgenre. While I attempting to align with the Metal Archives' original classifications, I made a few exceptions when an unclassified subgenre alone could be classified under an existing subgenre, without any additional phrasing or another subgenre. Examples of this are shown below, and reflected by inclusions to the code block below.
+
+-   Southern alone would get put with both Doom/Stoner/Sludge and Groove
+
+-   Goregrind alone would get put with Grindcore
+
+-   Neoclassical alone would get put with Symphonic
+
+Conversely, while Post-Metal typically went under Doom/Stoner/Sludge, anything with Post- in that subgenre was accompanied by Doom, Stoner, or Sludge. This suggests that Post-Metal alone was not enough to get grouped under Doom/Stoner/Sludge, and was therefore not classified under that subgenre here (Post-Metal and other unclassified subgenres are shown in section [3.A. Identify Records Not Belonging to a Subgenre]). Since there was a vast amount of data to work with, no further processing was conducted for bands of unclassified subgenres.
+
+```{sql, connection=con}
+UPDATE processed_genres SET
+    black = CASE WHEN genre LIKE '%Black%' THEN 1 ELSE 0 END,
+    death = CASE WHEN genre LIKE '%Death%' THEN 1 ELSE 0 END,
+    doom = CASE WHEN genre LIKE '%Doom%' 
+                OR genre LIKE '%Stoner%' 
+                OR genre LIKE '%Sludge%' 
+                OR genre LIKE '%Southern%' THEN 1 ELSE 0 END,
+    electronic_industrial = CASE WHEN genre LIKE '%Electronic%' 
+                                 OR genre LIKE '%Industrial%' THEN 1 ELSE 0 END,
+    experimental = CASE WHEN genre LIKE '%Experimental%' 
+                        OR genre LIKE '%Avant-garde%' THEN 1 ELSE 0 END,
+    folk = CASE WHEN genre LIKE '%Folk%' 
+                OR genre LIKE '%Viking%'
+                OR genre LIKE '%Pagan%' THEN 1 ELSE 0 END,
+    gothic = CASE WHEN genre LIKE '%Gothic%' THEN 1 ELSE 0 END,
+    grindcore = CASE WHEN genre LIKE '%Grindcore%' 
+                     OR genre LIKE '%Goregrind%' THEN 1 ELSE 0 END,
+    groove = CASE WHEN genre LIKE '%Groove%' 
+                  OR genre LIKE '%Southern%' THEN 1 ELSE 0 END,
+    heavy = CASE WHEN genre LIKE '%Heavy%' THEN 1 ELSE 0 END,
+    metalcore_deathcore = CASE WHEN genre LIKE '%Metalcore%' 
+                               OR genre LIKE '%Deathcore%' THEN 1 ELSE 0 END,
+    power = CASE WHEN genre LIKE '%Power%' THEN 1 ELSE 0 END,
+    progressive = CASE WHEN genre LIKE '%Progressive%' THEN 1 ELSE 0 END,
+    speed = CASE WHEN genre LIKE '%Speed%' THEN 1 ELSE 0 END,
+    symphonic = CASE WHEN genre LIKE '%Symphonic%' 
+                     OR genre LIKE '%Neoclassical%' THEN 1 ELSE 0 END,
+    thrash = CASE WHEN genre LIKE '%Thrash%' THEN 1 ELSE 0 END;
+```
+
+```{sql, connection=con}
+SELECT * 
+FROM processed_genres
+LIMIT 10;
+```
+
+#### 3.A. Identify Records Not Belonging to a Subgenre
+
+```{sql, connection=con}
+ALTER TABLE processed_genres ADD COLUMN total_subgenres INTEGER DEFAULT 0;
+```
+
+```{sql, connection=con}
+UPDATE processed_genres
+SET total_subgenres = 
+    black + death + doom + electronic_industrial + experimental + folk +  gothic + 
+    grindcore + groove + heavy + metalcore_deathcore + power + progressive + speed + 
+    symphonic + thrash;
+```
+
+```{sql, connection=con}
+SELECT COUNT(*) AS subgenreless_bands 
+FROM processed_genres
+WHERE total_subgenres = 0;
+```
+
+```{sql, connection=con}
+SELECT 
+    genre, 
+    COUNT(*) AS number_of_bands
+FROM processed_genres
+GROUP BY genre
+HAVING total_subgenres = 0
+ORDER BY number_of_bands DESC
+LIMIT 10;
+```
+
+### 4. Save Table
+
+The code blocks below save the TEMP table `processed_genres` as `dc_processed_genres`, with the dc\_ prefix denoting the dummy coding-like structure of the subgenre columns. Dropping any pre-existing tables of this name ensures the new table is created, even if a table with the same name exists.
+
+```{sql, connection=con}
+DROP TABLE IF EXISTS dc_processed_genres;
+```
+
+```{sql, connection=con}
+CREATE TABLE dc_processed_genres AS 
+SELECT * 
+FROM processed_genres;
+```
+
+```{r}
+dbDisconnect(con)
+```

@@ -1,0 +1,23 @@
+# analyses
+database_construction.ipynb
+metallum_web_scraping.html
+metallum_web_scraping.qmd
+predictive_analyses.html
+predictive_analyses.qmd
+# data
+data/gdp_per_capita.csv
+data/innovation_index.csv 
+data/population.csv
+data/world_happiness_report_2024.csv
+/multi_sub_metal_bands.csv
+/sub_metal_bands.csv
+/world_happiness_report_2024.csv
+/world_happiness_report_data.csv
+/world_of_metal.db
+# supplementary files
+metallum_web_scraping_files/
+predictive_analyses_files/
+# misc files
+.DS_Store
+config.cpython-312.pyc
+_extensions/shafayetShafee/

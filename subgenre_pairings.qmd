@@ -1,0 +1,345 @@
+---
+title: "Metal Subgenre Market Basket Analysis in R"
+author: "Kevin B. Miller"
+output: html_document
+bibliography: references.bib
+csl: apa.csl
+date: 2024/07/02
+---
+
+# TL;DR
+
+The analyses in this report analyzed commonly co-occurring Metal subgenres in Metal bands using Market Basket Analysis techniques.
+
+Bands were scraped from Encyclopaedia Metallum and assigned binary values to each basic subgenre from the website. Only bands that were classified as having multiple subgenres were examined here.
+
+Death (52.3%), Thrash (30.5%), and Black Metal (27.4%) were the most common subgenres in multi-subgenre bands. More common subgenres tended to have a lower percentage of multi-subgenre bands (e.g., Black Metal: 36.7%; Heavy Metal: 40.0%), whereas less common subgenres tended to have a higher percentage of multi-subgenre bands (e.g., Experimental/Avant-garde Metal: 94.2%; Electronic/Industrial Metal: 89.9%). Among multi-subgenre bands, 90.1% of Grindcore bands were also categorized as Death Metal, 74.2% of Metalcore/Deathcore bands were also categorized as Death Metal, and 62.7% of Folk/Viking/Pagan Metal bands were also categorized as Black Metal. The subgenre pairings that occurred at least 1.5x more frequently than expected included Power and Heavy Metal, Gothic and Doom Metal, Folk/Viking/Pagan and Black Metal, Grindcore and Death Metal, and Speed and Thrash Metal.
+
+These subgenres pairings represent commonly co-occurring Metal subgenres, and each pairing can be explained within the developmental context of Metal music. Further analyses can expand on those conducted here by examining more specific subgenres or including more contextual information regarding the band's use of a given subgenre.
+
+# Background
+
+Metal music is composed of subgenres, which represent common subtypes of Metal. Many bands evolve into different subgenres across releases, or will take influence from multiple subgenres at once. Since bands occupying multiple subgenres is not uncommon, I wanted to analyze metal band data to see which subgenres frequently occurred together. The implication for commonly co-occurring subgenres is that these subgenres "blend" well together, or are comprised of similar influences or musical components.
+
+I tested this using Market Basket Analysis (MBA), which is a technique frequently used in commercial settings to analyze item associations across transactions. For a good primer on the topic and metric interpretation, I recommend reading *Market Basket Analysis 101: Key Concepts* from @curriesivek2020. In my use case, subgenres were used in place of items and bands in place of transactions. These analyses used the `arules` package [@hahsler2023], and I followed along with the corresponding tutorial to apply these functions to my use case [@hahsler2024].
+
+The data used in these analyses was scraped from [Encyclopaedia Metallum](https://www.metal-archives.com/) and processed within the `metallum_bands.db` SQLite database. Text strings from each band's original `Genre` entry were extracted to compared to a list of fifteen basic genres provided by the website (see `metallum_web_scraping.qmd` for more details). These Metal subgenres are included Black, Death, Doom/Stoner/Sludge, Electronic/Industrial, Experimental/Avant-garde, Folk/Viking/Pagan, Gothic, Grindcore, Groove, Heavy, Metalcore/Deathcore, Power, Progressive, Speed, Symphonic, and Thrash Metal. These analyses were meant to characterize associations between the broader, overarching subgenres, and further analyses can expand findings here by analyzing subgenres with greater specificity.
+
+## Load Packages and Data
+
+Following the loading of necessary packages and setting of options, the variable `con` was set to represent the connection to database `metallum_bands.db`. The data from this table was extracted into the tibble `te_metal_bands_df`.
+
+```{r}
+#| warning: false
+# load necessary packages
+library(tidyverse) 
+library(RSQLite) 
+library(knitr) 
+library(ggplot2)  
+library(arules)
+```
+
+```{r}
+# set global option to 3 digits to keep outputs from overflowing
+options(digits=3)
+```
+
+```{r}
+# set con equal to SQLite database metallum_bands.db
+con <- dbConnect(RSQLite::SQLite(), 'metallum_bands.db')
+```
+
+```{r}
+#| code-overflow: wrap
+# extract the table dc_processed genres as a tibble and get basic info 
+te_metal_bands_df <- dbGetQuery(con, 'SELECT * FROM dc_processed_genres') %>%
+    as_tibble()
+str(te_metal_bands_df)
+```
+
+## Initial Data Wrangling and Transaction Setup
+
+Columns pertaining to subgenres were binary (0/1), denoting absence or presence of subgenre for each band, respectively. While the majority of bands belonged to one subgenre, a considerable amount had two or more. Following the removal of bands with fewer than two subgenres, nearly 70,000 multi-subgenre bands remained. The average number of subgenres for this subgroup was 2.15, indicating a smaller proportion of bands with three to six subgenres. The object `trans_bands` was used to convert the binary subgenre variables to logical (TRUE/FALSE) and store each band as a transaction with subgenres as items. The summary and plot depict the relative frequencies of each subgenre, with Death (36,057), Thrash (21,019), and Black Metal (18,902) as the most common subgenres.
+
+```{r}
+# shorten the longer names for easier plotting and outputs
+long_subs <- c(elect = 'electronic_industrial', 
+               exp = 'experimental', 
+               core = 'metalcore_deathcore', 
+               prog = 'progressive')
+te_metal_bands_df <- te_metal_bands_df %>%
+    rename(all_of(long_subs))
+str(te_metal_bands_df)
+```
+
+```{r}
+# get distribution for total_subgenres
+ggplot(te_metal_bands_df, aes(x=total_subgenres)) +
+    geom_histogram(binwidth=1) +
+    labs(title='Number of Bands with Number of Subgenres',
+         x='Number of Subgenres', 
+         y='Number of Bands')
+```
+
+```{r}
+# remove bands with 0 or 1 subgenre
+ref_te_metal_bands_df <- te_metal_bands_df %>%
+    filter(total_subgenres > 1)
+str(ref_te_metal_bands_df)
+```
+
+```{r}
+# get mean number of subgenres among those with multiple
+subgenres_per_multi_bands <- mean(ref_te_metal_bands_df$total_subgenres)
+subgenres_per_multi_bands
+```
+
+```{r}
+# setup transactions object from arules for subgenre columns
+trans_bands <- ref_te_metal_bands_df %>%
+    select(black:thrash) %>% 
+    # convert from binary to logical
+    mutate_all(as.logical) %>% 
+    transactions()
+```
+
+```{r}
+# get basic summary
+summary(trans_bands)
+```
+
+```{r}
+#| fig-cap:
+#|   - "Metal Subgenres (left to right): Death, Thrash, Black, Heavy, Doom, Progressive, Power, Groove, Metalcore/Deathcore, Grindcore, Symphonic, Gothic, Speed, Folk/Viking/Pagan, Experimental/Avant-garde, Electronic/Industrial."
+# show plot of each subgenre's relative frequency
+itemFrequencyPlot(trans_bands, topN=20)
+```
+
+## Support
+
+Support represents the proportion of the records in a set of items containing an item or combination of items, as depicted in the equation below:
+
+$$
+Support = \frac{Count(A)}{Count(All)}
+$$
+
+The threshold for support was set to 0.015, which is the proportion roughly equal to 1,000 bands in the multi-subgenre subset. The table for single subgenres reiterates the frequency plot from the previous section, with Death (52.3%), Thrash (30.5%), and Black Metal (27.4%) comprising a large proportion of the total bands. With a fairly liberal support threshold, 22 multi-subgenre combinations had 1,000 bands or more. Two immediate standouts included Death-Thrash and Blackened Death Metal, with both comprising roughly 14% of observations in the item set (14.0% and 13.8%, respectively).
+
+```{r}
+# create apriori rules object for occurrences with support > 0.015
+support_rules <- trans_bands %>%
+    apriori(parameter=list(target='frequent', support=0.015))
+```
+
+```{r}
+# create subset for single subgenres
+single_item_support <- subset(support_rules, size(items) == 1)
+```
+
+```{r}
+# create subset for multiple subgenres
+multi_item_support <- subset(support_rules, size(items) > 1)
+```
+
+```{r}
+# sort and display the single subgenre support metrics
+single_item_support_sorted <- sort(single_item_support, by='support') %>%
+    head(n=20) %>%
+    inspect()
+```
+
+```{r}
+# sort and display the multiple subgenre support metrics
+multi_item_support_sorted <- sort(multi_item_support, by='support') %>%
+    head(n=25) %>%
+    inspect()
+```
+
+## Mixability
+
+Next, I wanted to compare the proportion of bands featuring multiple subgenres across subgenres. To do this, I created a transactions object from the original data, which included all bands, regardless of how many subgenres each had. Then I extracted the support metrics from all bands and the bands with multiple subgenres, and joined these two dataframes into a single dataframe (`comparison_support_df`). I computed a new variable, mixability, as the proportion of each subgenre's observations in which the subgenre was one of two or more:
+
+$$
+Mixability_{Subgenre} = P(2+ Subgenres) = \frac{Count(Subgenre|2+ Subgenres)}{Count(Subgenre)}
+$$
+
+```{r}
+# create transactions object for all bands regardless of subgenre number
+all_trans_bands <- te_metal_bands_df %>%
+    select(black:thrash) %>%
+    mutate_all(as.logical) %>%
+    transactions()
+```
+
+```{r}
+# create ruleset from transations for support
+all_subs_support <- all_trans_bands %>%
+    apriori(parameter=(list(target='frequent', support=0.001)))
+```
+
+```{r}
+# extract all single subgenre support metrics 
+single_all_subs_support <- subset(all_subs_support, size(items) == 1)
+```
+
+```{r}
+# sort the single subgenre support metrics
+single_all_subs_support_sorted <- sort(single_all_subs_support, 
+                                       by='support') %>%
+    head(n=20) %>%
+    inspect()
+```
+
+```{r}
+# convert single multi-subgenre support to dataframe
+single_support_df <- as(single_item_support_sorted, 'data.frame')
+```
+
+```{r}
+# convert all subgenre support to dataframe
+all_single_support_df <- as(single_all_subs_support_sorted, 'data.frame')
+```
+
+```{r}
+# add multi_ prefix to distinguish columns
+single_support_df <- single_support_df %>%
+    rename_with(.cols=support:count, ~ paste0('multi_', .x))
+```
+
+```{r}
+# join tables on items (subgenre)
+comparison_support_df <- single_support_df %>%
+    left_join(all_single_support_df, join_by(items))
+```
+
+```{r}
+# create mixability variable and sort accordingly
+comparison_support_df <- comparison_support_df %>%
+    mutate(mixability = multi_count/count) %>%
+    arrange(desc(mixability))
+```
+
+## Mixability Results
+
+```{r}
+# output comparison support metrics 
+comparison_support_df
+```
+
+```{r}
+#| fig-cap:
+#|   - "Metal Subgenres (left to right): Electronic/Industrial, Experimental/Avant-garde, Folk/Viking/Pagan, Metalcore/Deathcore, Groove, Power, Progressive, Doom, Heavy, Thrash, Black, Death."
+# create scatter plot comparing number of bands to mixability
+ggplot(comparison_support_df, aes(x=count, y=mixability, label=items)) + 
+    geom_text(check_overlap=TRUE) +
+    labs(title='Mixability in Relation to Total Subgenre Band Count',
+         x='Number of Bands in Subgenre', 
+         y='Mixability (Proportion in Multi-Subgenre)')
+```
+
+A few different findings emerge from the scatter plot above:
+
+-   There appears to be an inverse relationship between number of bands in each subgenre and subgenre mixability
+
+-   Less common subgenres (\< 10,000 bands) all had high mixability (\> .70)
+
+-   Black, Heavy, and–to a lesser extent–Doom Metal had low mixability (.37, .40, and .51, respectively)
+
+-   Thrash and Death Metal had relatively high mixability (.61 and .56, respectively), despite being more common subgenres
+
+While being appropriately speculative, it is plausible that more common subgenres have a greater capacity to be "stand-alone" subgenres. Conversely, subgenres like Experimental/Avant-garde and Electronic/Industrial Metal imply influences outside of Metal, which may reflect a lesser capacity for each to be a "stand-alone" Metal subgenre. Thrash and Death Metal had high mixability relative to subgenres of comparable size, such as Heavy or Black Metal. This may suggest Thrash and Death Metal have robust influences, which are simultaneously flexible enough to incorporate other subgenres more regularly than Heavy or Black Metal. Further investigation into the hierarchical structure of Metal subgenres may be useful to characterize mixability, and whether some of these high-mixability subgenres are treated more like add-on influences than subgenres.
+
+## Confidence
+
+Confidence represents the proportion of observations in which a consequent item (B) will also be in the interaction, given an antecedent item (A) in the association. It answers the question, "What are the chances I will get item B, if I already have A?":
+
+$$
+Confidence = \frac{P(B|A)}{P(A)}
+$$
+
+Keeping the same threshold for support (0.015), I added a confidence threshold of 0.25 to the `apriori` object `rules`. The combination of these constraints yielded item associations that occurred at least 1.5% of the time, in which the consequent (second) item was present at least 25% of the time, given the antecedent (first) item in the sequence. Only multi-item associations were examined, as single-item confidence metrics do not add anything on top of support.
+
+```{r}
+#| code-overflow: wrap
+# extract rules with support > 0.015 and confidence > 0.25
+rules <- apriori(trans_bands, parameter=list(support=0.015, 
+                                             confidence=0.25))
+```
+
+```{r}
+# extract multi-item associations only
+multi_item_confidence <- subset(rules, size(lhs(rules)) > 0)
+```
+
+```{r}
+# sort the multi-item assocations by confidence 
+multi_item_confidence_sorted <- sort(multi_item_confidence, 
+                                     by='confidence')
+multi_item_confidence_sorted %>%
+    inspect()
+```
+
+Seventeen multi-subgenre associations exceeded the .25 confidence threshold, with the top four exceeding a threshold of .50. As an example for the top entry, over 90% of Grindcore bands with multiple subgenres had Death Metal as a subgenre. Additionally, Death Metal is a common additional subgenre for Metalcore/Deathcore bands (74.2%), Black Metal is a common additional subgenre for Folk/Viking/Pagan Metal bands (62.7%), and Death Metal is a common additional subgenre for Black Metal bands (50.3%).
+
+## Lift
+
+Lift goes a step beyond confidence, yielding the probably of consequent (B) given antecedent (A), accounting for the likelihood of these items occurring together if there was no association between them:
+
+$$
+Lift = \frac{p(B|A)}{p(A)*p(B)}
+$$
+
+Since no relationship is assumed between a pair of items, lift values can be interpreted with the following framework:
+
+-   Lift = 0-1: occur less often than expected
+
+-   Lift = 1: occurs as often as expected
+
+-   Lift \> 1: occurs more often than expected
+
+Using the same support (0.015) and confidence constraints (0.25) as before, the lift metrics are shown below in descending order.
+
+```{r}
+# support previous rules by lift 
+lift_rules <- sort(multi_item_confidence, by='lift')
+lift_rules %>%
+    inspect()
+```
+
+Ignoring bidirectional rules shown in reverse order, nine subgenre pairings occurred more often than expected, with five occurring more than 1.5 times as frequently as expected. These pairings are shown in the table below. Using the top pairing of Power and Heavy Metal as an example, just under five percent (4.9%) of the multi-subgenre pairings included these two, but this was nearly three times as frequently as expected (2.99).
+
+```{r}
+# filter to include only lift > 1.5
+# filter confidence to remove duplicate heavy => power
+lifted_sub_pairs <- subset(lift_rules, lift > 1.5 & confidence > .35)
+lifted_sub_pairs %>%
+    inspect()
+```
+
+## Conclusion
+
+Returning to the initial question regarding which metal subgenres frequently co-occur together, the lift table above yields a good picture of subgenres than co-occur more often than would be expected. These subgenre pairings are listed below:
+
+-   Power and Heavy Metal
+
+-   Gothic and Doom Metal
+
+-   Folk/Viking/Pagan and Black Metal
+
+-   Grindcore and Death Metal
+
+-   Speed and Thrash Metal
+
+To knowledgeable Metalheads like myself, these pairings are unsurprising and sensible from a subgenre hierarchy standpoint. For an excellent visual representation of metal subgenres that contains contextual information on influences and timelines of each, I recommend visiting [mapofmetal.com](https://mapofmetal.com/) [@mapofm]. Two of these subgenre pairings represent an "offshoot" of the older subgenre (Power from Heavy Metal and Thrash from Speed Metal), which suggests a clear overlap between each of the pairings. Grindcore and Death Metal evolved on a similar timeline with similar influences, and the existence of intermediate subgenres like Deathgrind suggest a clear link between the two.
+
+The links between Gothic and Doom and Folk/Viking/Pagan and Black Metal are present as well, and each represents interesting path that potentially diverged from the larger developments in a subgenre. For Gothic and Doom Metal (i.e., Gothic Doom Metal), it may have served as a means for Gothic Metal bands of the late 1990's to diverge from the contemporary usage of symphonic elements in the subgenre [@gothicd]. Instead, Gothic Doom Metal leaned into the more bleak and depressing lyrical and musical influences inherent to both Gothic and Doom Metal. The link between Folk/Viking/Pagan and Black Metal likely stems from the subgenres Viking and Pagan Metal, which were both derived from Black Metal [@hofmann2020c]. These subgenres supplanted the Satanic lyrical themes typical of Black Metal by incorporating Norse mythology and Paganism into lyrics, as well as focuses on nature and broader folklore [@hofmann2020c; @vonhelden2010].
+
+## Next Steps
+
+Since these analyses were intended to provide a general overview of commonly co-occurring Metal subgenres, a couple improvements immediately come to mind for future analyses. Firstly, it would be advantageous to go beyond the basic subgenres provided by Encyclopaedia Metallum to analyze more specific subgenres. This is especially the case for base subgenres like Death or Doom Metal, which have a considerable degree of heterogeneity between subgenres under the base subgenre. Secondly, it would be useful to discern whether a band listed under multiple subgenres evolved from one to another, or simultaneously embodied multiple subgenres. Although these instances were treated as equivalent here, it could be argued that a band taking simultaneous influence from multiple subgenres is a better example of a multi-subgenre band. While Encyclopaedia Metallum provides labels like "(early)" or "(late)" to distinguish impermanent subgenres for a band, a proper demarcation might require additional information from album reviews or analysis or musical elements.
+
+The following code block saves the dataframe `te_metal_bands_df` to a .csv file for later usage. 
+
+```{r}
+write_csv(te_metal_bands_df, 'data/sub_metal_bands.csv')
+```
