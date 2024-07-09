@@ -6,7 +6,7 @@
 
 2. [sql_subgenre_cleaning.qmd](sql_subgenre_cleaning.qmd) parses the `genre` field in the data with SQLite code to represent each band by its component subgenres. 
 
-3. [subgenre pairings.qmd](subgenre_pairings.qmd) analyzes the associations between subgenres through market basket analysis techniques (i.e., support, confidence, and lift) using the [arules](https://github.com/mhahsler/arules) package in R. 
+3. [subgenre pairings.qmd](subgenre_pairings.qmd) analyzes the associations between subgenres through market basket analysis techniques (i.e., support, confidence, and lift) using the [arules](https://github.com/mhahsler/arules) package in R. The resulting processed data is available following analysis as [sub_metal_bands.csv](sub_metal_bands.csv).
 
 4. The main findings from [subgenre_pairings.qmd](subgenre_pairings.qmd) are also summarized in a [Tableau dashboard](https://public.tableau.com/app/profile/kevin.miller4132/viz/Metal_Subgenre_MBA/MetalSubgenrePairings?publish=yes).
 
@@ -21,6 +21,8 @@ Additionally, [ChromeDriver](https://developer.chrome.com/docs/chromedriver/down
 Files [sql_subgenre_cleaning.qmd](sql_subgenre_cleaning.qmd) and [subgenre_pairings.qmd](subgenre_pairings.qmd) used R version 4.4.1 and the packages listed in [r_requirements.txt](r_requirements.txt).
 
 ## License
+
+This project is licensed under the MIT License (see [LICENSE](LICENSE) for more information).
 
 ## Acknowledgements
 
