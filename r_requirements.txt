@@ -1,0 +1,6 @@
+DBI==1.2.3
+RSQLite==2.3.7
+knitr==1.47
+tidyverse==2.0.0
+ggplot2==3.5.1
+arules==1.7.7
