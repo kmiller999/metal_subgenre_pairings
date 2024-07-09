@@ -1,10 +1,13 @@
 ---
 title: "Metal Subgenre Market Basket Analysis in R"
-author: "Kevin B. Miller"
+author: "Kevin Miller"
 output: html_document
 bibliography: references.bib
 csl: apa.csl
-date: July 8, 2024
+date: 2024/07/08
+categories: [R, Market Basket Analysis, Data Mining]
+description: Subgenre pairings are just like how people pair wines and cheeses. Now it's with music you probably dislike. 
+image: "subgenre_pairings_files/figure-html/unnamed-chunk-11-1.png"
 ---
 
 # TL;DR

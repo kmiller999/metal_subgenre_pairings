@@ -1,8 +1,10 @@
 ---
 title: "Cleaning Metal Archives Data Using SQL"
-author: "Kevin B. Miller"
-date: July 8, 2024
+author: "Kevin Miller"
+date: 2024/07/08
 output: html_document
+categories: [SQL, Data Cleaning]
+description: Since we all know multi-subgenre Metal bands are cooler, I parsed the genre field so each band could represent multiple subgenres. 
 ---
 
 ## Database Connection
