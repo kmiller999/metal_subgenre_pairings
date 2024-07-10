@@ -8,7 +8,7 @@
 
 3. [subgenre pairings.qmd](subgenre_pairings.qmd) analyzes the associations between subgenres through market basket analysis techniques (i.e., support, confidence, and lift) using the [arules](https://github.com/mhahsler/arules) package in R. The resulting processed data is available following analysis as [sub_metal_bands.csv](sub_metal_bands.csv).
 
-4. The main findings from [subgenre_pairings.qmd](subgenre_pairings.qmd) are also summarized in a [Tableau dashboard](https://public.tableau.com/app/profile/kevin.miller4132/viz/Metal_Subgenre_MBA/MetalSubgenrePairings?publish=yes).
+4. The main findings from [subgenre_pairings.qmd](subgenre_pairings.qmd) are also summarized in the file [tableau_dash.qmd](tableau_dash.qmd).
 
 ## Libraries Used and Requirements
 
