@@ -2,7 +2,7 @@
 
 ## Description and Usage 
 
-1. [scraper.py](scraper.py) scrapes [Encyclopaedia Metallum](https://www.metal-archives.com/browse/genre) for metal bands by genre, then creates and adds data to the SQLite database [metallum_bands.db](metallum_bands.db) and .csv file [metallum_bands.csv](data/metallum_bands.csv).
+1. [scraper.py](scraper.py) scrapes [Encyclopaedia Metallum](https://www.metal-archives.com/browse/genre) for metal bands by genre, then creates and adds data to the SQLite database [metallum_bands.db](metallum_bands.db) and .csv file [metallum_bands.csv](data/metallum_bands.csv). The file [scraper.qmd](scraper.qmd) represents a Quarto-enabled version of this file. 
 
 2. [sql_subgenre_cleaning.qmd](sql_subgenre_cleaning.qmd) parses the `genre` field in the data with SQLite code to represent each band by its component subgenres. 
 
