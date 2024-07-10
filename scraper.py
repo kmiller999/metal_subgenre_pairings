@@ -1,3 +1,22 @@
+# %% [markdown]
+# ---
+# title: Web Scraping Encyclopaedia Metallum
+# author: Kevin Miller
+# date: 2024/07/10
+# output: html_document
+# categories: [Python, Web Scraping]
+# description: A web scraper designed to gather entries on hundreds of thousands of Metal bands. 
+# ---
+
+# %% [markdown]
+"""
+Note: This is an adapted version of the original Python script optimized for Quarto. 
+
+Accordingly, the number of bands exported from this file to `metallum_bands.db` or `metallum_bands.csv` may not align perfectly with those shown in subsequent analyses. 
+"""
+
+# %%
+# import necessary libraries
 from bs4 import BeautifulSoup
 import pandas as pd
 from selenium import webdriver
@@ -7,13 +26,15 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver import ChromeOptions
 import time
 
+# %%
 # set options to fine-tune ChromeOptions()
 options = ChromeOptions()
 # run headless ChromeDriver to avoid popup
 options.add_argument('--headless=new')
 
 # instantiate Chrome driver with headless browser
-driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), 
+                          options=options)
 
 # define base url 
 base_url = 'https://www.metal-archives.com/lists/'
@@ -21,6 +42,7 @@ base_url = 'https://www.metal-archives.com/lists/'
 # instantiate driver from base_url
 driver.get(base_url)
 
+# %%
 # define function to extract band info from each individual page
 def extract_band_info(page_source):
     # create BeautifulSoup object to parse HTMl aspects of page
@@ -46,6 +68,7 @@ def extract_band_info(page_source):
         # return the final band_info
     return band_info
 
+# %%
 # define function to extract all bands from letter
 def extract_bands_from_letter(page_source):
     # create empty list for all bands in each letter
@@ -79,6 +102,7 @@ def extract_bands_from_letter(page_source):
         # return all bands from the letter
     return entire_letter_bands
 
+# %%
 # define function to get every band on metallum
 def extract_all_letters(base_url):
     # define base url
@@ -148,12 +172,15 @@ def extract_all_letters(base_url):
         # return all the bands from all the letters and characters
     return all_bands 
 
+# %%
 # using extract_all_letters, save all bands to all_bands
 all_bands = extract_all_letters(base_url=base_url)
 
+# %%
 # quit driver
 driver.quit()
 
+# %%
 # convert all_bands to df
 metallum_df = pd.DataFrame.from_dict(all_bands)
 
@@ -163,6 +190,7 @@ metallum_df['band_id'] = metallum_df.index
 # output df to csv
 metallum_df.to_csv('data/metallum_bands.csv')
 
+# %%
 # import sqlite and create database 'metallum_bands.db'
 import sqlite3
 
@@ -171,6 +199,7 @@ conn = sqlite3.connect('metallum_bands.db')
 # add metallum_df to database
 metallum_df.to_sql('metal_archives_table', con=conn, if_exists='replace', index=False)
 
+# %%
 # commit database changes and close sqlite connection
 conn.commit()
 conn.close()
