@@ -1,8 +1,15 @@
 # Metal Subgenre Pairing Analyses
 
+Rendered version of the following files are available in my [portfolio website](https://kmiller999.github.io/ds_portfolio/): 
+
+ - [scraper.py](https://kmiller999.github.io/ds_portfolio/posts/metal_subgenre_pairings/scraper.html)
+ - [sql_subgenre_cleaning.qmd](https://kmiller999.github.io/ds_portfolio/posts/metal_subgenre_pairings/sql_subgenre_cleaning.html)
+ - [subgenre_pairings.qmd](https://kmiller999.github.io/ds_portfolio/posts/metal_subgenre_pairings/subgenre_pairings.html)
+ - [tableau_dash.qmd](https://kmiller999.github.io/ds_portfolio/posts/metal_subgenre_pairings/tableau_dash.html)
+
 ## Description and Usage 
 
-1. [scraper.py](scraper.py) scrapes [Encyclopaedia Metallum](https://www.metal-archives.com/browse/genre) for metal bands by genre, then creates and adds data to the SQLite database [metallum_bands.db](metallum_bands.db) and .csv file [metallum_bands.csv](data/metallum_bands.csv). The file [scraper.qmd](scraper.qmd) represents a Quarto-enabled version of this file. 
+1. [scraper.py](scraper.py) scrapes [Encyclopaedia Metallum](https://www.metal-archives.com/browse/letter) for metal bands by letter, then creates and adds data to the SQLite database [metallum_bands.db](metallum_bands.db) and .csv file [metallum_bands.csv](data/metallum_bands.csv). The file [scraper.qmd](scraper.qmd) represents a Quarto-enabled version of this file. 
 
 2. [sql_subgenre_cleaning.qmd](sql_subgenre_cleaning.qmd) parses the `genre` field in the data with SQLite code to represent each band by its component subgenres. 
 
